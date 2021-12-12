@@ -1,4 +1,4 @@
-# NOTE: THIS DOCKERFILE IS APPLIED FROM: https://github.com/docker-library/wordpress/blob/d6cedc3a993142ed4597579ad4084b9a81cd3e59/latest/php7.4/apache/Dockerfile
+# NOTE: THIS DOCKERFILE IS APPLIED FROM: https://raw.githubusercontent.com/docker-library/wordpress/master/latest/php7.4/apache/Dockerfile
 
 FROM php:7.4-apache
 
@@ -22,12 +22,14 @@ RUN set -ex; \
 		libjpeg-dev \
 		libmagickwand-dev \
 		libpng-dev \
+		libwebp-dev \
 		libzip-dev \
 	; \
 	\
 	docker-php-ext-configure gd \
 		--with-freetype \
 		--with-jpeg \
+		--with-webp \
 	; \
 	docker-php-ext-install -j "$(nproc)" \
 		bcmath \
@@ -36,7 +38,8 @@ RUN set -ex; \
 		mysqli \
 		zip \
 	; \
-	pecl install imagick-3.4.4; \
+# https://pecl.php.net/package/imagick
+	pecl install imagick-3.5.0; \
 	docker-php-ext-enable imagick; \
 	rm -r /tmp/pear; \
 	\
@@ -99,10 +102,10 @@ RUN set -eux; \
 # (replace all instances of "%h" with "%a" in LogFormat)
 	find /etc/apache2 -type f -name '*.conf' -exec sed -ri 's/([[:space:]]*LogFormat[[:space:]]+"[^"]*)%h([^"]*")/\1%a\2/g' '{}' +
 
-
 VOLUME /var/www/html
 
 COPY docker-entrypoint.sh /usr/local/bin/
+COPY wordpress-cli-install.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
